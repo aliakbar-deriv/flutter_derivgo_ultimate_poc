@@ -39,7 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String message = '';
   bool isLoading = false;
   bool isDownloaded = false;
-  bool enableUpdateBanner = true;
+  bool enableUpdateBanner = false;
   String buttonLabel = 'Download';
   String bannerMessage = 'A new version of DerivGO Ultimate is available.';
 
@@ -71,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(bannerMessage),
+                  Expanded(child: Text(bannerMessage)),
                   _buildTrailingWidget(),
                 ],
               ),
@@ -86,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           setState(() {
             isLoading = false;
@@ -94,40 +94,10 @@ class _MyHomePageState extends State<MyHomePage> {
             buttonLabel = 'Download';
             enableUpdateBanner = true;
           });
-          // final dio = Dio();
-          // const String pdfUrl =
-          //     "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
-          // const String apkURL =
-          //     'https://wetransfer.com/downloads/f2ee9584693c09d2ab4b36a3c765065d20230223082139/6c8eef418fa02d1930ef065299fd46b220230223082222/90ddd8';
-          //
-          // // final tempDir = await getTemporaryDirectory();
-          // final rootDir = await getExternalStorageDirectory();
-          // final String savePath = rootDir!.path + "/sample_pdf.pdf";
-          // print('full path ${savePath}');
-          //
-          // await downloadUsingDio(dio, pdfUrl, savePath);
-          // final OpenResult result = await OpenFile.open(savePath);
-          // setState(() {
-          //   message = '${result.type}\n:::\n' + result.message;
-          // });
-
-          // final Permission installPermission =
-          //     Permission.requestInstallPackages;
-          // bool installStatus = false;
-          // bool ispermanetelydenied =
-          //     await installPermission.isPermanentlyDenied;
-          // if (ispermanetelydenied) {
-          //   print("denied");
-          //   await openAppSettings();
-          // } else {
-          //   final installStatu = await installPermission.request();
-          //   installStatus = installStatu.isGranted;
-          //   print(installStatus);
-          // }
-          // if (installStatus) {}
         },
         tooltip: 'Reset Button',
-        child: const Icon(Icons.restart_alt),
+        label: const Text('TRY NEW VERSION'),
+        icon: const Icon(Icons.restart_alt),
       ),
     );
   }
@@ -198,28 +168,46 @@ class _MyHomePageState extends State<MyHomePage> {
       return TextButton(
           child: const Text('Update'),
           onPressed: () async {
+            // const Permission packageInstallPermission =
+            //     Permission.requestInstallPackages;
+            // bool isPermanentlyDenied =
+            //     await packageInstallPermission.isPermanentlyDenied;
+            //
+            // if (isPermanentlyDenied) {
+            //   print("Permanently denied");
+            //   await openAppSettings();
+            // } else {
+            //   final packageInstallPermissionStatus =
+            //       await packageInstallPermission.request();
+            //   if (packageInstallPermissionStatus.isGranted) {
+            //      //TODO: Download and install action here
+            //   }
+            // }
+
             setState(() {
               isLoading = true;
               bannerMessage = 'Downloading DerivGO Ultimate..';
             });
-            await Future.delayed(const Duration(seconds: 3));
-            final rootDir = await getExternalStorageDirectory();
-            final String savePath = rootDir!.path + "/app-release.apk";
-            print('full path ${savePath}');
+
+            final dio = Dio();
+            const String apkTestUrl =
+                'https://firebasestorage.googleapis.com/v0/b/derivgo-ultimate.appspot.com/o/derivgo_ultimate_v2_0.apk?alt=media&token=61871e21-b3fa-4da0-ace0-e95f3d59e99f';
+            final tempDir = await getTemporaryDirectory();
+            final String savePath =
+                tempDir.path + "/derivgo_ultimate_v2_0.apk";
+            print('APK file path $savePath');
+            await downloadUsingDio(dio, apkTestUrl, savePath);
             setState(() {
               bannerMessage = 'Installing DerivGO Ultimate..';
             });
-            await Future.delayed(const Duration(seconds: 5));
-
-            // await downloadUsingDio(dio, pdfUrl, savePath);
+            await Future.delayed(const Duration(seconds: 2));
             final OpenResult result = await OpenFile.open(savePath);
-
-            await Future.delayed(const Duration(seconds: 3));
             setState(() {
               message = '${result.type}\n:::\n' + result.message;
               enableUpdateBanner = false;
               isLoading = false;
             });
+
           });
     }
   }
